@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APX WEAR | Gold Luxury Ultimate Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FIREBASE SDK (Realtime Database for cross-device sync) -->
+    <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebase@8.10.1/firebase-database.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #08090c;
+            --bg-card: #11131a;
+            --border-card: #202432;
+            --text-main: #ffffff;
+            --text-muted: #8e92a2;
+            --gold-gradient: linear-gradient(135deg, #f39c12 0%, #d4af37 50%, #f1c40f 100%);
+            --gold-color: #d4af37;
+            --accent-green: #2ed573;
+            --danger-color: #ff4757;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f4f5f9;
+            --bg-card: #ffffff;
+            --border-card: #e1e4ed;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --gold-gradient: linear-gradient(135deg, #b8860b 0%, #d4af37 100%);
+            --gold-color: #b8860b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
+
+        /* HEADER */
+        header {
+            background: rgba(8, 9, 12, 0.95);
+            backdrop-filter: blur(12px);
+            position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid var(--border-card);
+            padding: 12px 4%;
+        }
+        .nav-top { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: auto; gap: 10px; }
+        .brand-logo-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .brand-logo-img { height: 30px; width: auto; max-width: 100px; object-fit: contain; display: none; }
+        .brand-logo { font-size: 20px; font-weight: 800; letter-spacing: 1px; color: var(--text-main); }
+        .brand-logo span { background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .header-actions { display: flex; align-items: center; gap: 14px; }
+        .icon-btn { position: relative; cursor: pointer; font-size: 17px; color: var(--gold-color); }
+        .icon-badge {
+            position: absolute; top: -8px; right: -9px;
+            background: var(--danger-color); color: #fff;
+            font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 50%;
+        }
+
+        .search-box {
+            position: relative; display: flex; align-items: center;
+            background: var(--bg-card); border: 1px solid var(--border-card);
+            border-radius: 20px; padding: 6px 12px; width: 170px;
+        }
+        .search-box input { background: transparent; border: none; outline: none; color: var(--text-main); font-size: 11px; width: 100%; margin: 0 4px; }
+        .cam-btn { color: var(--gold-color); cursor: pointer; font-size: 13px; }
+
+        /* FLOATING WHATSAPP */
+        .whatsapp-float {
+            position: fixed; bottom: 85px; right: 18px;
+            background: #25d366; color: white; width: 48px; height: 48px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; box-shadow: 0 4px 15px rgba(37,211,102,0.4); z-index: 999; text-decoration: none;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+        /* 5-TAB BOTTOM NAV BAR */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--bg-card); border-top: 1px solid var(--border-card);
+            display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+        }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 9px; font-weight: 600; cursor: pointer; flex: 1; }
+        .nav-tab i { font-size: 16px; margin-bottom: 2px; }
+        .nav-tab.active { color: var(--gold-color); }
+
+        /* SECTIONS */
+        .page-section { display: none; max-width: 1200px; margin: auto; padding: 16px; }
+        .page-section.active-section { display: block; }
+
+        .btn-gold {
+            background: var(--gold-gradient); color: #000; border: none; padding: 10px 16px;
+            border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2); display: inline-flex; align-items: center; gap: 6px; justify-content: center;
+        }
+        .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .qr-box { text-align: center; background: var(--bg-body); border: 1px dashed var(--border-card); border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+        .qr-box img { width: 150px; height: 150px; border-radius: 6px; background: #fff; padding: 4px; }
+        .qr-box p { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+        .qr-box a { font-size: 11px; color: var(--gold-color); font-weight: 700; text-decoration: none; display: inline-block; margin-top: 4px; }
+        .btn-outline {
+            background: transparent; color: var(--gold-color); border: 1px solid var(--gold-color);
+            padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px; justify-content: center;
+        }
+
+        @keyframes heroReveal { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
+        .hero-reveal { animation: heroReveal 0.6s ease both; }
+
+        /* TRUST BADGES STRIP */
+        .trust-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+        .trust-item { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 10px; padding: 8px 4px; text-align: center; }
+        .trust-item i { color: var(--gold-color); font-size: 15px; margin-bottom: 4px; display: block; }
+        .trust-item span { font-size: 8.5px; color: var(--text-muted); font-weight: 600; line-height: 1.3; display: block; }
+        @media (max-width: 480px) { .trust-strip { grid-template-columns: repeat(2, 1fr); } }
+
+        .verified-badge {
+            font-size: 9px; color: var(--accent-green); font-weight: 700;
+            background: rgba(46,213,115,0.1); padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+        }
+
+        /* PRODUCT GRID */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 14px; }
+        .product-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; overflow: hidden; position: relative; }
+        .product-card.pro-card { border-color: var(--gold-color); }
+        .product-img-wrap { position: relative; overflow: hidden; height: 180px; }
+        .product-img { width: 100%; height: 180px; object-fit: cover; background: #1c1f2b; position: absolute; top: 0; left: 0; transition: opacity 0.4s ease, transform 0.4s ease; }
+        .product-img.secondary-img { opacity: 0; }
+        .product-card:hover .product-img.primary-img { transform: scale(1.06); }
+        .product-card:hover .product-img.secondary-img { opacity: 1; }
+        .discount-badge { position: absolute; top: 8px; left: 8px; background: var(--danger-color); color: white; font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 4px; }
+        .wishlist-btn {
+            position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
+            background: rgba(8,9,12,0.7); color: #fff; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; cursor: pointer; border: none;
+        }
+        .wishlist-btn.active { color: var(--danger-color); }
+
+        .product-details { padding: 10px; }
+        .product-title { font-size: 12px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rating-row { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--gold-color); margin-bottom: 4px; cursor: pointer; }
+        .rating-row .rev-count { color: var(--text-muted); }
+        .stock-tag { font-size: 9px; color: var(--danger-color); font-weight: 700; margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
+        .price-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+        .curr-price { font-size: 14px; font-weight: 800; color: var(--gold-color); }
+        .orig-price { font-size: 10px; color: var(--text-muted); text-decoration: line-through; }
+        .size-guide-link { font-size: 10px; color: var(--text-muted); cursor: pointer; text-decoration: underline; }
+        .admin-controls { display: none; gap: 6px; margin-top: 6px; }
+
+        /* SETTINGS ITEMS */
+        .settings-card {
+            background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 10px;
+            padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        }
+
+        /* CUSTOM PRINT BOX */
+        .custom-print-box { background: var(--bg-card); border: 1px solid var(--gold-color); border-radius: 12px; padding: 16px; margin-top: 10px; }
+        .print-option { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid var(--border-card); border-radius: 8px; margin-top: 8px; flex-wrap: wrap; gap: 6px; }
+
+        /* MODALS */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); z-index: 2000; justify-content: center; align-items: center; padding: 16px; overflow-y: auto; }
+        .modal-body { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 16px; padding: 20px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; position: relative; color: var(--text-main); }
+        .close-btn { position: absolute; top: 16px; right: 18px; cursor: pointer; font-size: 18px; color: var(--text-muted); }
+
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; background: var(--bg-body); border: 1px solid var(--border-card); border-radius: 6px; color: var(--text-main); font-size: 12px; outline: none; }
+
+        /* PAYMENT CONFIRM BOX (HONEST 2-STEP, NOT AUTOMATIC) */
+        .payment-confirm-box {
+            display: none; background: rgba(212,175,55,0.1); border: 1px dashed var(--gold-color);
+            padding: 10px; border-radius: 8px; font-size: 11px; margin: 10px 0; text-align: center;
+        }
+
+        /* THANKS OVERLAY */
+        .thanks-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 9, 12, 0.95); z-index: 3000; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center; padding: 20px;
+        }
+        .thanks-card { background: var(--bg-card); border: 2px solid var(--gold-color); border-radius: 20px; padding: 30px; max-width: 400px; width: 100%; animation: popIn 0.5s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* TRACKER / ORDERS */
+        .tracker-steps { display: flex; justify-content: space-between; margin-top: 12px; border-top: 1px dashed var(--border-card); padding-top: 8px; }
+        .tracker-step { font-size: 9px; text-align: center; color: var(--text-muted); flex: 1; }
+        .tracker-step.active { color: var(--accent-green); font-weight: 700; }
+        .status-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .dispatch-tag { font-size: 9px; background: rgba(212,175,55,0.1); color: var(--gold-color); padding: 3px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+
+        /* SIZE GUIDE TABLE */
+        .size-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        .size-table th, .size-table td { border: 1px solid var(--border-card); padding: 8px; text-align: center; }
+        .size-table th { background: rgba(212,175,55,0.1); color: var(--gold-color); }
+
+        /* REVIEWS */
+        .review-item { border-bottom: 1px solid var(--border-card); padding: 10px 0; }
+        .review-item:last-child { border-bottom: none; }
+        .review-stars { color: var(--gold-color); font-size: 12px; }
+        .review-name { font-weight: 700; font-size: 12px; }
+        .review-comment { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+        /* PRODUCT DETAIL SLIDER MODAL */
+        .slider-container { position: relative; width: 100%; height: 300px; overflow: hidden; background: #000; border-radius: 16px 16px 0 0; }
+        .slider-track { display: flex; width: 100%; height: 100%; transition: transform 0.4s ease-in-out; }
+        .slider-track img { width: 100%; height: 100%; object-fit: cover; flex-shrink: 0; }
+        .slider-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.5); color: white; border: none;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .slider-btn.prev-btn { left: 10px; }
+        .slider-btn.next-btn { right: 10px; }
+        .slider-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+        .slider-dots .dot { width: 7px; height: 7px; background: rgba(255,255,255,0.5); border-radius: 50%; transition: 0.2s; }
+        .slider-dots .dot.active { background: var(--gold-color); width: 16px; border-radius: 4px; }
+        .detail-body { padding: 16px; }
+        .detail-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .detail-price-box { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 16px; }
+
+        /* WISHLIST LIST ITEM */
+        .wishlist-item { display: flex; gap: 10px; align-items: center; border: 1px solid var(--border-card); border-radius: 8px; padding: 8px; margin-bottom: 10px; }
+        .wishlist-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+        .wishlist-item .wi-info { flex: 1; }
+        .wishlist-item .wi-title { font-size: 12px; font-weight: 600; }
+        .wishlist-item .wi-price { font-size: 13px; color: var(--gold-color); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <a href="https://wa.me/917250027972" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+
+    <!-- HEADER -->
+    <header>
+        <div class="nav-top">
+            <div class="brand-logo-wrap">
+                <img src="" id="brandLogoImg" class="brand-logo-img" alt="APX WEAR Logo">
+                <div class="brand-logo" id="brandLogoText">APX <span>WEAR</span></div>
+            </div>
+            <div class="header-actions">
+                <div class="search-box">
+                    <i class="fas fa-search" style="font-size:11px; color:var(--text-muted);"></i>
+                    <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterProducts()">
+                    <label for="cameraUpload" class="cam-btn" title="Photo se search karein"><i class="fas fa-camera"></i></label>
+                    <input type="file" id="cameraUpload" accept="image/*" style="display:none;" onchange="handleCameraSearch(event)">
+                </div>
+                <div class="icon-btn" onclick="openWishlistModal()">
+                    <i class="fas fa-heart"></i>
+                    <span class="icon-badge" id="wishlistBadge">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TAB 1: HOME -->
+    <div class="page-section active-section" id="sec-home">
+        <div class="hero-reveal" style="background: var(--bg-card); border:1px solid var(--border-card); border-radius:12px; padding:18px; text-align:center;">
+            <h2 style="font-size:18px; color:var(--gold-color);"><i class="fas fa-bolt"></i> LIMITED DROPS</h2>
+            <p style="font-size:11px; color:var(--text-muted);">High-Density DTF Custom Prints & Heavyweight Tees</p>
+        </div>
+
+        <div class="trust-strip">
+            <div class="trust-item"><i class="fas fa-shield-halved"></i><span>100% Secure Payment</span></div>
+            <div class="trust-item"><i class="fas fa-truck-fast"></i><span>Fast Pan-India Delivery</span></div>
+            <div class="trust-item"><i class="fas fa-rotate-left"></i><span>7-Day Easy Return</span></div>
+            <div class="trust-item"><i class="fas fa-headset"></i><span>24/7 WhatsApp Support</span></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap; gap:8px;">
+            <h3 style="font-size:15px;">Standard Apparel Collection</h3>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <span class="size-guide-link" onclick="openModal('sizeGuideModal')"><i class="fas fa-ruler"></i> Size Guide</span>
+                <button class="btn-gold" id="adminAddBtn" style="display:none;" onclick="openAddProductModal(false)"><i class="fas fa-plus"></i> Add Product</button>
+            </div>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+    </div>
+
+    <!-- TAB 2: PRO MEMBERS -->
+    <div class="page-section" id="sec-pro">
+        <div style="background: linear-gradient(135deg, #1c180b 0%, var(--bg-card) 100%); border:1px solid var(--gold-color); border-radius:14px; padding:18px; text-align:center; margin-bottom:14px;">
+            <i class="fas fa-crown" style="font-size:30px; color:var(--gold-color);"></i>
+            <h2 style="color:var(--gold-color); font-size:18px; margin-top:4px;">APX PRO VIP CATALOG</h2>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Members get special discounted pricing on the same collection.</p>
+            <button class="btn-gold" onclick="startProMembership()"><i class="fas fa-gem"></i> Join Pro VIP — ₹99/Year</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h4 style="color:var(--gold-color); font-size:13px;">VIP Discounted Products</h4>
+            <button class="btn-gold" id="adminAddProBtn" style="display:none;" onclick="openAddProductModal(true)"><i class="fas fa-plus"></i> Add Pro Item</button>
+        </div>
+        <div class="product-grid" id="proProductGrid"></div>
+    </div>
+
+    <!-- TAB 3: CUSTOM PRINT -->
+    <div class="page-section" id="sec-custom">
+        <div class="custom-print-box">
+            <h3 style="color:var(--gold-color);"><i class="fas fa-paint-brush"></i> Custom T-Shirt Print Ordering</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Apna design chuno, size aur address daalo — order seedha placed ho jayega.</p>
+
+            <div class="print-option">
+                <div><strong>Logo Printing (Chest Size)</strong><br><span style="font-size:10px; color:var(--text-muted);">High Definition DTF Stamp</span></div>
+                <div><span style="color:var(--gold-color); font-weight:800;">₹60</span> <button class="btn-gold" style="padding:4px 10px; margin-left:6px;" onclick="openCustomOrderModal('Logo Print', 60)">Select</button></div>
+            </div>
+
+            <div class="print-option">
+                <div><strong>Front Print (A4/A3 Size)</strong><br><span style="font-size:10px; color:var(--text-muted);">Full Front Graphic Artwork</span></div>
+                <div><span style="color:var(--gold-color); font-weight:800;">₹80</span> <button class="btn-gold" style="padding:4px 10px; margin-left:6px;" onclick="openCustomOrderModal('Front Print', 80)">Select</button></div>
+            </div>
+
+            <div class="print-option">
+                <div><strong>Front + Back Double Print</strong><br><span style="font-size:10px; color:var(--text-muted);">Complete Dual-Side Graphic</span></div>
+                <div><span style="color:var(--gold-color); font-weight:800;">₹150</span> <button class="btn-gold" style="padding:4px 10px; margin-left:6px;" onclick="openCustomOrderModal('Front + Back Print', 150)">Select</button></div>
+            </div>
+
+            <p style="font-size:10px; color:var(--text-muted); margin-top:14px; text-align:center;">Koi alag/special design idea hai jo yahan list nahi hai? <a href="https://wa.me/917250027972" target="_blank" style="color:var(--gold-color);">Seedha WhatsApp par bataiye</a></p>
+        </div>
+    </div>
+
+    <!-- TAB 4: ORDERS (Customer tracking / Admin received orders) -->
+    <div class="page-section" id="sec-orders">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:6px;">
+            <h3 id="ordersTabHeading" style="color:var(--gold-color); font-size:15px;"><i class="fas fa-boxes"></i> My Orders & Live Tracking</h3>
+            <span id="orderRoleBadge" style="font-size:10px; background:var(--border-card); padding:4px 8px; border-radius:4px;">Customer Mode</span>
+        </div>
+        <div id="ordersDisplayContainer"></div>
+    </div>
+
+    <!-- TAB 5: SETTINGS -->
+    <div class="page-section" id="sec-settings">
+        <h3 style="margin-bottom:12px; font-size:15px;">Account & Settings</h3>
+
+        <div class="settings-card">
+            <div><strong>Theme Switcher</strong><p style="font-size:10px; color:var(--text-muted);" id="themeStatusText">Current: Dark Luxury Gold</p></div>
+            <button class="btn-gold" onclick="toggleTheme()">Switch Theme</button>
+        </div>
+
+        <div class="settings-card">
+            <div><strong>User Account</strong><p style="font-size:10px; color:var(--text-muted);" id="userAccountStatus">Not Logged In</p></div>
+            <button class="btn-gold" onclick="openModal('loginModal')">Login via OTP</button>
+        </div>
+
+        <div class="settings-card">
+            <div><strong>Admin Portal</strong><p style="font-size:10px; color:var(--text-muted);" id="adminPortalStatus">Locked</p></div>
+            <button class="btn-gold" onclick="openModal('adminLoginModal')">Admin Access</button>
+        </div>
+
+        <div class="settings-card" id="adminPassCard" style="display:none;">
+            <div><strong>Security Settings</strong><p style="font-size:10px; color:var(--text-muted);">Update Admin Secret Key</p></div>
+            <button class="btn-gold" onclick="openModal('changePassModal')">Change Password</button>
+        </div>
+
+        <div class="settings-card" id="adminPromoCard" style="display:none;">
+            <div><strong>Promo Code Engine</strong><p style="font-size:10px; color:var(--text-muted);">Private code — share manually, not shown on site</p></div>
+            <button class="btn-gold" onclick="openModal('promoModal')">Create Promo Code</button>
+        </div>
+
+        <div class="settings-card" id="adminProMembersCard" style="display:none;">
+            <div><strong>Pro Members</strong><p style="font-size:10px; color:var(--text-muted);">Members list jo Pro payment submit kar chuke hain</p></div>
+            <button class="btn-gold" onclick="openProMembersModal()">View List</button>
+        </div>
+
+        <div class="settings-card" id="adminLogoCard" style="display:none;">
+            <div><strong>Brand Logo</strong><p style="font-size:10px; color:var(--text-muted);">Upload your logo image for the header</p></div>
+            <button class="btn-gold" onclick="openModal('logoModal')">Change Logo</button>
+        </div>
+
+        <div class="settings-card">
+            <div><strong>Delivery Hub</strong><p style="font-size:10px; color:var(--text-muted);">Mayaram Tola, Rajdhanwar, Sirmandih, Giridih, Jharkhand</p></div>
+            <i class="fas fa-warehouse" style="color:var(--gold-color); font-size:18px;"></i>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+        <div class="nav-tab active" onclick="switchTab('sec-home', this)"><i class="fas fa-home"></i> Home</div>
+        <div class="nav-tab" onclick="switchTab('sec-pro', this)"><i class="fas fa-crown"></i> Pro</div>
+        <div class="nav-tab" onclick="switchTab('sec-custom', this)"><i class="fas fa-paint-brush"></i> Custom</div>
+        <div class="nav-tab" id="tabMyOrders" onclick="switchTab('sec-orders', this)"><i class="fas fa-box-open"></i> <span id="navOrderLabel">Orders</span></div>
+        <div class="nav-tab" onclick="switchTab('sec-settings', this)"><i class="fas fa-cog"></i> Settings</div>
+    </div>
+
+    <!-- THANKS OVERLAY -->
+    <div class="thanks-overlay" id="thanksOverlay">
+        <div class="thanks-card">
+            <i class="fas fa-check-circle" style="font-size:50px; color:var(--accent-green); margin-bottom:10px;"></i>
+            <h2 id="thanksTitle" style="color:var(--gold-color);">ORDER CONFIRMED!</h2>
+            <p id="thanksMessage" style="font-size:12px; color:var(--text-muted); margin:10px 0 20px 0;"></p>
+            <button class="btn-gold" onclick="closeThanksOverlay()">View Order Status</button>
+        </div>
+    </div>
+
+    <!-- MODAL: LOGIN (DEMO OTP — HONESTLY LABELED) -->
+    <div class="modal" id="loginModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('loginModal')">&times;</span>
+            <h3 style="color:var(--gold-color);"><i class="fas fa-user"></i> Customer Login</h3>
+            <p style="font-size:10px; color:var(--text-muted); margin-top:6px;">Pro Members ke liye login karna zaroori hai — sirf naam aur mobile number se ho jayega.</p>
+            <form onsubmit="handleLogin(event)" style="margin-top:10px;">
+                <div class="form-group"><label>Full Name</label><input type="text" id="loginName" required></div>
+                <div class="form-group"><label>Mobile Number</label><input type="tel" id="loginPhone" pattern="[0-9]{10}" placeholder="10-digit number" required></div>
+                <button type="submit" class="btn-gold" style="width:100%;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PRO MEMBERS LIST (ADMIN) -->
+    <div class="modal" id="proMembersModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('proMembersModal')">&times;</span>
+            <h3 style="color:var(--gold-color);"><i class="fas fa-crown"></i> Pro Members</h3>
+            <div id="proMembersList" style="margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: PRO MEMBERSHIP CHECKOUT -->
+    <div class="modal" id="proCheckoutModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('proCheckoutModal')">&times;</span>
+            <h3 style="color:var(--gold-color);"><i class="fas fa-gem"></i> Pro VIP Membership — ₹99/Year</h3>
+            <form onsubmit="submitProMembership(event)" style="margin-top:10px;">
+                <button type="button" class="btn-gold" style="width:100%; margin-bottom:8px;" onclick="triggerUPIPayment('promembership')"><i class="fas fa-qrcode"></i> Step 1: Pay ₹99 via UPI</button>
+                <div class="qr-box">
+                    <img id="proQrImg" src="" alt="Scan to Pay QR">
+                    <p>Ya is QR ko scan karke bhi pay kar sakte hain</p>
+                    <a id="proQrDownload" href="" target="_blank" download="APX-WEAR-QR.png"><i class="fas fa-download"></i> QR Download / Open</a>
+                </div>
+                <div class="payment-confirm-box" id="paymentConfirmBoxPro"><i class="fas fa-circle-check" style="color:var(--accent-green);"></i> UPI app khola gaya. Payment complete karne ke baad neeche confirm kariye.</div>
+                <button type="submit" id="subProBtn" class="btn-gold" style="width:100%; background:var(--accent-green); color:#000;" disabled>Step 2: Maine Payment Kar Diya — Submit Karein</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PRODUCT CHECKOUT (HONEST 2-STEP PAYMENT) -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('checkoutModal')">&times;</span>
+            <h3 style="color:var(--gold-color);"><i class="fas fa-shopping-cart"></i> Complete Order</h3>
+
+            <div style="background:var(--bg-body); padding:10px; border-radius:8px; font-size:11px; margin:10px 0;">
+                <div><strong>Item:</strong> <span id="ckTitle">-</span></div>
+                <div><strong>Product Price:</strong> ₹<span id="ckBasePrice">0</span></div>
+                <div><strong>Delivery Charge:</strong> <span id="ckDeliveryText" style="color:var(--gold-color);">Address daalein...</span></div>
+                <div><strong>Promo Discount:</strong> -₹<span id="ckDiscount">0</span></div>
+                <hr style="border-color:var(--border-card); margin:6px 0;">
+                <div style="font-size:14px; font-weight:800;">Total Amount: ₹<span id="ckTotal">0</span></div>
+            </div>
+
+            <form id="checkoutForm" onsubmit="placeProductOrder(event)">
+                <div class="form-group"><label>Customer Full Name</label><input type="text" id="ckName" required></div>
+                <div class="form-group"><label>Mobile Phone Number</label><input type="tel" id="ckPhone" pattern="[0-9]{10}" required></div>
+                <div class="form-group"><label>PhonePe Name (Jis naam se PhonePe account hai)</label><input type="text" id="ckPhonePeName" placeholder="Apke PhonePe account ka naam" required></div>
+                <div class="form-group">
+                    <label>Select T-Shirt Size</label>
+                    <select id="ckSize"><option>S (38)</option><option>M (40)</option><option>L (42)</option><option>XL (44)</option><option>XXL (46)</option></select>
+                </div>
+                <div class="form-group"><label>Pin Code</label><input type="text" id="ckPincode" onkeyup="calculateDeliveryRate()" required></div>
+                <div class="form-group"><label>Full Address (Village/City, Landmark)</label><textarea id="ckAddress" rows="2" onkeyup="calculateDeliveryRate()" required></textarea></div>
+                <div class="form-group">
+                    <label>Promo Code (Optional)</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="ckPromoInput" placeholder="Agar aapke paas code hai">
+                        <button type="button" class="btn-gold" onclick="applyPromoCode()">Apply</button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-gold" style="width:100%; margin-bottom:8px;" onclick="triggerUPIPayment('product')"><i class="fas fa-qrcode"></i> Step 1: Pay via UPI App</button>
+                <div class="qr-box">
+                    <img id="ckQrImg" src="" alt="Scan to Pay QR">
+                    <p>Ya is QR ko scan karke bhi pay kar sakte hain</p>
+                    <a id="ckQrDownload" href="" target="_blank" download="APX-WEAR-QR.png"><i class="fas fa-download"></i> QR Download / Open</a>
+                </div>
+
+                <div class="payment-confirm-box" id="paymentConfirmBoxProduct">
+                    <i class="fas fa-circle-check" style="color:var(--accent-green);"></i> UPI app khola gaya. Payment complete karne ke baad neeche confirm kariye.
+                </div>
+
+                <button type="submit" id="subOrderBtn" class="btn-gold" style="width:100%; background:var(--accent-green); color:#000;" disabled>Step 2: Maine Payment Kar Diya — Order Confirm Karein</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CUSTOM ORDER CHECKOUT (HONEST 2-STEP PAYMENT) -->
+    <div class="modal" id="customOrderModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('customOrderModal')">&times;</span>
+            <h3 style="color:var(--gold-color);">Custom Print Checkout</h3>
+
+            <div style="background:var(--bg-body); padding:10px; border-radius:8px; font-size:11px; margin:10px 0;">
+                <div><strong>Print Type:</strong> <span id="custTypeDisplay">-</span></div>
+                <div><strong>Print Price:</strong> ₹<span id="custBasePrice">0</span></div>
+                <div><strong>Delivery Charge:</strong> <span id="custDeliveryText" style="color:var(--gold-color);">Address daalein...</span></div>
+                <hr style="border-color:var(--border-card); margin:6px 0;">
+                <div style="font-size:14px; font-weight:800;">Total Amount: ₹<span id="custTotal">0</span></div>
+            </div>
+
+            <form onsubmit="placeCustomOrder(event)">
+                <div class="form-group">
+                    <label>Select Size</label>
+                    <select id="custSize"><option>S (38)</option><option>M (40)</option><option>L (42)</option><option>XL (44)</option><option>XXL (46)</option></select>
+                </div>
+                <div class="form-group"><label>Custom Text / Artwork Notes</label><input type="text" id="custText" placeholder="Name, logo ya design instructions" required></div>
+                <div class="form-group"><label>Customer Name</label><input type="text" id="custName" required></div>
+                <div class="form-group"><label>Phone Number</label><input type="tel" id="custPhone" pattern="[0-9]{10}" required></div>
+                <div class="form-group"><label>PhonePe Name (Jis naam se PhonePe account hai)</label><input type="text" id="custPhonePeName" placeholder="Apke PhonePe account ka naam" required></div>
+                <div class="form-group"><label>Pin Code</label><input type="text" id="custPincode" onkeyup="calculateCustomDelivery()" required></div>
+                <div class="form-group"><label>Shipping Address</label><textarea id="custAddr" rows="2" placeholder="Address, Rajdhanwar / City" onkeyup="calculateCustomDelivery()" required></textarea></div>
+
+                <button type="button" class="btn-gold" style="width:100%; margin-bottom:8px;" onclick="triggerUPIPayment('custom')"><i class="fas fa-qrcode"></i> Step 1: Pay via UPI App</button>
+                <div class="qr-box">
+                    <img id="custQrImg" src="" alt="Scan to Pay QR">
+                    <p>Ya is QR ko scan karke bhi pay kar sakte hain</p>
+                    <a id="custQrDownload" href="" target="_blank" download="APX-WEAR-QR.png"><i class="fas fa-download"></i> QR Download / Open</a>
+                </div>
+
+                <div class="payment-confirm-box" id="paymentConfirmBoxCustom">
+                    <i class="fas fa-circle-check" style="color:var(--accent-green);"></i> UPI app khola gaya. Payment complete karne ke baad neeche confirm kariye.
+                </div>
+
+                <button type="submit" id="subCustomBtn" class="btn-gold" style="width:100%; background:var(--accent-green); color:#000;" disabled>Step 2: Maine Payment Kar Diya — Order Confirm Karein</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PRODUCT DETAIL SLIDER -->
+    <div class="modal" id="detailModal">
+        <div class="modal-body" style="padding:0; max-width:420px;">
+            <span class="close-btn" onclick="closeModal('detailModal')" style="z-index:10; background:rgba(0,0,0,0.6); color:#fff; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</span>
+            <div class="slider-container">
+                <div class="slider-track" id="sliderTrack"></div>
+                <button class="slider-btn prev-btn" onclick="moveSlide(-1)"><i class="fas fa-chevron-left"></i></button>
+                <button class="slider-btn next-btn" onclick="moveSlide(1)"><i class="fas fa-chevron-right"></i></button>
+                <div class="slider-dots" id="sliderDots"></div>
+            </div>
+            <div class="detail-body">
+                <div class="detail-title" id="dTitle">-</div>
+                <div class="detail-price-box"><span class="curr-price" id="dPrice">₹0</span><span class="orig-price" id="dOrigPrice"></span></div>
+                <div class="rating-row" id="dRating" style="margin-bottom:14px; cursor:pointer;"></div>
+                <button class="btn-gold" id="dBuyBtn" style="width:100%;"><i class="fas fa-bolt"></i> Buy Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: WISHLIST -->
+    <div class="modal" id="wishlistModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('wishlistModal')">&times;</span>
+            <h3 style="color:var(--gold-color);"><i class="fas fa-heart"></i> My Wishlist</h3>
+            <div id="wishlistContainer" style="margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: REVIEWS -->
+    <div class="modal" id="reviewsModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('reviewsModal')">&times;</span>
+            <h3 style="color:var(--gold-color);"><i class="fas fa-star"></i> Ratings & Reviews</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin:6px 0 10px;" id="reviewsProductTitle"></p>
+            <div id="reviewsList" style="margin-bottom:14px;"></div>
+            <form onsubmit="submitReview(event)" style="border-top:1px solid var(--border-card); padding-top:12px;">
+                <input type="hidden" id="reviewProdId">
+                <div class="form-group"><label>Your Name</label><input type="text" id="reviewName" required></div>
+                <div class="form-group">
+                    <label>Rating</label>
+                    <select id="reviewRating" required>
+                        <option value="5">★★★★★ (5)</option><option value="4">★★★★☆ (4)</option>
+                        <option value="3">★★★☆☆ (3)</option><option value="2">★★☆☆☆ (2)</option><option value="1">★☆☆☆☆ (1)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Comment</label><textarea id="reviewComment" rows="2" required></textarea></div>
+                <button type="submit" class="btn-gold" style="width:100%;">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: SIZE GUIDE -->
+    <div class="modal" id="sizeGuideModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('sizeGuideModal')">&times;</span>
+            <h3 style="color:var(--gold-color);"><i class="fas fa-ruler"></i> Size Guide</h3>
+            <p style="font-size:11px; color:var(--text-muted);">Measurements in inches. Oversized fit — snug fit ke liye size down karein.</p>
+            <table class="size-table">
+                <tr><th>Size</th><th>Chest</th><th>Length</th><th>Shoulder</th></tr>
+                <tr><td>S</td><td>38</td><td>27</td><td>18</td></tr>
+                <tr><td>M</td><td>40</td><td>28</td><td>19</td></tr>
+                <tr><td>L</td><td>42</td><td>29</td><td>20</td></tr>
+                <tr><td>XL</td><td>44</td><td>30</td><td>21</td></tr>
+                <tr><td>XXL</td><td>46</td><td>31</td><td>22</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL: ADMIN LOGIN -->
+    <div class="modal" id="adminLoginModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('adminLoginModal')">&times;</span>
+            <h3>Admin System Access</h3>
+            <form onsubmit="handleAdminLogin(event)" style="margin-top:10px;">
+                <div class="form-group"><label>Secret Password</label><input type="password" id="adminPassInput" required></div>
+                <button type="submit" class="btn-gold" style="width:100%;">Login as Admin</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CHANGE ADMIN PASSWORD -->
+    <div class="modal" id="changePassModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('changePassModal')">&times;</span>
+            <h3>Update Admin Password</h3>
+            <form onsubmit="updateAdminPassword(event)" style="margin-top:10px;">
+                <div class="form-group"><label>New Password</label><input type="password" id="newAdminPass" required></div>
+                <button type="submit" class="btn-gold" style="width:100%;">Save Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE PROMO CODE (PRIVATE — NOT SHOWN PUBLICLY) -->
+    <div class="modal" id="promoModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('promoModal')">&times;</span>
+            <h3>Create Promo Code</h3>
+            <p style="font-size:10px; color:var(--text-muted); margin:6px 0;">Yeh code website par kahin dikhega nahi — customer ko aap khud WhatsApp/Instagram par bata sakte hain. Sirf 24 ghante ke liye valid rahega.</p>
+            <form onsubmit="createPromoCode(event)" style="margin-top:10px;">
+                <div class="form-group"><label>Promo Code</label><input type="text" id="promoCodeInput" placeholder="e.g. APX10" required></div>
+                <div class="form-group"><label>Discount %</label><input type="number" id="promoPctInput" placeholder="10" required></div>
+                <button type="submit" class="btn-gold" style="width:100%;">Save Promo Code</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT PRODUCT -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('addProductModal')">&times;</span>
+            <h3 id="prodModalTitle">Product Manager</h3>
+            <form onsubmit="saveProduct(event)" style="margin-top:10px;">
+                <input type="hidden" id="editProdId">
+                <input type="hidden" id="isProTargetInput" value="false">
+                <div class="form-group"><label>Title</label><input type="text" id="prodTitleInput" required></div>
+                <div class="form-group"><label>Standard Price (₹)</label><input type="number" id="prodPriceInput" required></div>
+                <div class="form-group"><label>Pro Member Price (₹)</label><input type="number" id="prodProPriceInput" placeholder="Members ke liye special price" required></div>
+                <div class="form-group"><label>Original MRP (₹)</label><input type="number" id="prodOrigPriceInput" required></div>
+                <div class="form-group">
+                    <label>Upload Image File</label>
+                    <input type="file" id="prodFileInput" accept="image/*">
+                </div>
+                <div style="text-align:center; font-size:10px; color:var(--text-muted); margin:-4px 0 6px 0;">-- OR --</div>
+                <div class="form-group"><label>Paste Web Image URL</label><input type="url" id="prodImgInput" placeholder="https://example.com/image.jpg"></div>
+                <div class="form-group"><label>Second Image URL (Optional — back view, shows on hover)</label><input type="url" id="prodImg2Input" placeholder="https://example.com/back-view.jpg"></div>
+                <div class="form-group"><label>Upload Second Image File (Gallery — back view)</label><input type="file" id="prodFile2Input" accept="image/*"></div>
+                <button type="submit" class="btn-gold" style="width:100%;">Save Item</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CHANGE LOGO -->
+    <div class="modal" id="logoModal">
+        <div class="modal-body">
+            <span class="close-btn" onclick="closeModal('logoModal')">&times;</span>
+            <h3>Set Brand Logo</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin:8px 0;">Gallery se photo choose karo, ya seedha image URL daal do.</p>
+            <form onsubmit="applyLogo(event)">
+                <div class="form-group">
+                    <label>Choose Photo (Gallery / Camera)</label>
+                    <input type="file" id="newLogoFile" accept="image/*">
+                </div>
+                <div style="text-align:center; font-size:10px; color:var(--text-muted); margin:-4px 0 6px 0;">-- OR --</div>
+                <div class="form-group"><label>Logo Image URL</label><input type="url" id="newLogoUrl" placeholder="https://.../apx-logo.png"></div>
+                <button type="submit" class="btn-gold" style="width:100%;">Save Logo</button>
+                <button type="button" class="btn-outline" style="width:100%; margin-top:8px;" onclick="removeLogo()">Remove Logo (Use Text)</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ANTI-XSS SANITIZER — escapes user-entered text before it's inserted into the page
+        function sanitizeInput(str) {
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
+        const SUPPORT_WHATSAPP = "917250027972";
+        // NOTE: Replace this with the actual Mayaram Tola, Rajdhanwar delivery office's WhatsApp number if different.
+        const DELIVERY_OFFICE_WHATSAPP = "917250027972";
+        const PROMO_VALIDITY_MS = 24 * 60 * 60 * 1000;
+
+        /* ============ FIREBASE SETUP — real-time cross-device database ============ */
+        const firebaseConfig = {
+            apiKey: "AIzaSyAeX92DkU7rSuIBf1hT8BfKZfarxREc-X0",
+            authDomain: "apx-wear.firebaseapp.com",
+            databaseURL: "https://apx-wear-default-rtdb.firebaseio.com",
+            projectId: "apx-wear",
+            storageBucket: "apx-wear.firebasestorage.app",
+            messagingSenderId: "1039507812364",
+            appId: "1:1039507812364:web:daf2117c7381f73860fe29",
+            measurementId: "G-GKN6L9MQTP"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const DEFAULT_PRODUCTS = [
+            { id: 1, title: 'Tokyo Anime Oversized Vintage Tee', price: 565, origPrice: 1000, img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500' },
+            { id: 2, title: 'Minimalist Drop Shoulder Heavy Tee', price: 499, origPrice: 899, img: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500' },
+            { id: 3, title: 'Cyberpunk Graphic Streetwear Tee', price: 650, origPrice: 1200, img: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=500' }
+        ];
+        const DEFAULT_PRO_PRODUCTS = [
+            { id: 1001, title: 'Tokyo Anime Oversized Vintage Tee', price: 565, proPrice: 480, origPrice: 1000, img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500' },
+            { id: 1002, title: 'Minimalist Drop Shoulder Heavy Tee', price: 499, proPrice: 420, origPrice: 899, img: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500' },
+            { id: 1003, title: 'Cyberpunk Graphic Streetwear Tee', price: 650, proPrice: 560, origPrice: 1200, img: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=500' }
+        ];
+        const DEFAULT_ADMIN_PASSWORD = "apx7878PA";
+
+        // Seed the database ONLY if it's completely empty (first-ever run) — never overwrites real data afterwards
+        db.ref('std_products').once('value', snap => {
+            if (!snap.exists()) {
+                let seed = {};
+                DEFAULT_PRODUCTS.forEach(p => { let { id, ...rest } = p; seed[id] = rest; });
+                db.ref('std_products').set(seed);
+            }
+        });
+        db.ref('pro_products').once('value', snap => {
+            if (!snap.exists()) {
+                let seed = {};
+                DEFAULT_PRO_PRODUCTS.forEach(p => { let { id, ...rest } = p; seed[id] = rest; });
+                db.ref('pro_products').set(seed);
+            }
+        });
+        db.ref('admin_password').once('value', snap => {
+            if (!snap.exists()) db.ref('admin_password').set(DEFAULT_ADMIN_PASSWORD);
+        });
+
+        /* ============ LOCAL STATE — kept live in sync from Firebase ============ */
+        let isAdminLoggedIn = false;
+        let activeUser = null;
+        let adminPassword = DEFAULT_ADMIN_PASSWORD;
+        let activePromoCode = null; // not shown publicly; admin creates and shares manually
+        let products = [];
+        let proProducts = [];
+        let ordersDatabase = [];
+        let proMembers = [];
+        let reviews = {};
+
+        // Wishlist stays personal to this browser only — no need to share it via the database
+        let wishlist = [];
+        try { wishlist = JSON.parse(localStorage.getItem('apx_wishlist')) || []; } catch (e) { wishlist = []; }
+        function saveWishlistLocal() { try { localStorage.setItem('apx_wishlist', JSON.stringify(wishlist)); } catch (e) {} }
+
+        let currentCheckoutItem = null;
+        let customOrderTemp = null;
+        let calculatedDeliveryCharge = 0;
+        let appliedDiscount = 0;
+        let hasPaidProduct = false;
+        let hasPaidCustom = false;
+
+        function objToArrayWithId(obj, idField) {
+            if (!obj) return [];
+            return Object.keys(obj).map(k => ({ ...obj[k], [idField]: isNaN(k) ? k : Number(k) }));
+        }
+
+        /* ============ REAL-TIME LISTENERS — this is what makes everything sync live across devices ============ */
+        db.ref('std_products').on('value', snap => { products = objToArrayWithId(snap.val(), 'id'); renderProducts(); });
+        db.ref('pro_products').on('value', snap => { proProducts = objToArrayWithId(snap.val(), 'id'); renderProducts(); });
+        db.ref('orders').on('value', snap => {
+            let data = snap.val();
+            ordersDatabase = data
+                ? Object.keys(data).map(k => ({ ...data[k], orderId: k })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+                : [];
+            renderOrdersSection();
+        });
+        db.ref('pro_members').on('value', snap => {
+            let data = snap.val();
+            proMembers = data ? Object.keys(data).map(k => ({ ...data[k], _key: k })) : [];
+            if (document.getElementById('proMembersModal').style.display === 'flex') renderProMembersList();
+            renderProducts(); // refresh Pro Price buy-button lock state live
+        });
+        db.ref('reviews').on('value', snap => {
+            let data = snap.val() || {};
+            let newReviews = {};
+            Object.keys(data).forEach(prodId => { newReviews[prodId] = Object.values(data[prodId]); });
+            reviews = newReviews;
+            renderProducts();
+        });
+        db.ref('promo_code').on('value', snap => { activePromoCode = snap.val(); });
+        db.ref('admin_password').on('value', snap => { if (snap.val()) adminPassword = snap.val(); });
+        db.ref('app_logo').on('value', snap => {
+            let logoData = snap.val();
+            if (logoData) {
+                document.getElementById('brandLogoImg').src = logoData;
+                document.getElementById('brandLogoImg').style.display = 'block';
+                document.getElementById('brandLogoText').style.display = 'none';
+            } else {
+                document.getElementById('brandLogoImg').style.display = 'none';
+                document.getElementById('brandLogoText').style.display = 'block';
+            }
+        });
+
+        function playSuccessSound() {
+            try {
+                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = ctx.createOscillator(); let gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.5);
+            } catch(e) {}
+        }
+        function playVipSound() {
+            try {
+                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = ctx.createOscillator(); let gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.6);
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.6);
+            } catch(e) {}
+        }
+
+        function isActiveProMember() {
+            if (!activeUser) return false;
+            return proMembers.some(m => m.phone === activeUser.phone && m.status === 'Active');
+        }
+        function handleLockedProBuy() {
+            if (!activeUser) {
+                pendingLoginAction = 'proMembership';
+                alert('Pro Price par kharidne ke liye pehle login kijiye, phir Pro Membership activate karein.');
+                openModal('loginModal');
+            } else {
+                alert('Aapki Pro Membership abhi active nahi hai. Pehle ₹99 Pro VIP membership lein — admin approve karne ke baad hi Pro Price se kharid sakenge.');
+                startProMembership();
+            }
+        }
+
+        function getAvgRating(id) {
+            let list = reviews[id] || [];
+            if (list.length === 0) return { avg: 0, count: 0 };
+            let sum = list.reduce((a, r) => a + Number(r.rating), 0);
+            return { avg: (sum / list.length).toFixed(1), count: list.length };
+        }
+        function starString(avg) {
+            let full = Math.round(avg);
+            return '★'.repeat(full) + '☆'.repeat(5 - full);
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const proGrid = document.getElementById('proProductGrid');
+            grid.innerHTML = ''; proGrid.innerHTML = '';
+
+            products.forEach(p => {
+                let offPct = Math.round(((p.origPrice - p.price) / p.origPrice) * 100);
+                let ratingData = getAvgRating(p.id);
+                let ratingHtml = ratingData.count > 0
+                    ? `${starString(ratingData.avg)} <span class="rev-count">(${ratingData.count})</span>`
+                    : `<span class="rev-count">No reviews yet</span>`;
+                let inWishlist = wishlist.includes(p.id);
+                let stockLeft = 2 + (p.id % 6);
+
+                grid.innerHTML += `
+                    <div class="product-card">
+                        <div class="product-img-wrap" onclick="openProductDetail(${p.id}, false)" style="cursor:pointer;">
+                            <span class="discount-badge">${offPct}% OFF</span>
+                            <button class="wishlist-btn ${inWishlist ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist(${p.id})"><i class="${inWishlist ? 'fas' : 'far'} fa-heart"></i></button>
+                            <img src="${p.img}" class="product-img primary-img" alt="${sanitizeInput(p.title)}">
+                            ${p.img2 ? `<img src="${p.img2}" class="product-img secondary-img" alt="${sanitizeInput(p.title)} back view">` : ''}
+                        </div>
+                        <div class="product-details">
+                            <div class="product-title">${sanitizeInput(p.title)}</div>
+                            <div class="rating-row" onclick="openReviewsModal(${p.id})">${ratingHtml}</div>
+                            <div class="stock-tag"><i class="fas fa-fire"></i> Only ${stockLeft} left in stock</div>
+                            <div class="price-row"><span class="curr-price">₹${p.price}</span><span class="orig-price">₹${p.origPrice}</span></div>
+                            <button class="btn-gold" style="width:100%; font-size:10px;" onclick="openCheckoutModal(${p.id}, false)">Buy Now</button>
+                            <div class="admin-controls" style="${isAdminLoggedIn ? 'display:flex;' : 'display:none;'}">
+                                <button class="btn-gold" style="padding:4px 8px; font-size:10px;" onclick="editProduct(${p.id}, false)">Edit</button>
+                                <button class="btn-gold" style="padding:4px 8px; font-size:10px; background:var(--danger-color); color:white;" onclick="deleteProduct(${p.id}, false)">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            let unlocked = isActiveProMember();
+            proProducts.forEach(p => {
+                let ratingData = getAvgRating(p.id);
+                let ratingHtml = ratingData.count > 0
+                    ? `${starString(ratingData.avg)} <span class="rev-count">(${ratingData.count})</span>`
+                    : `<span class="rev-count">No reviews yet</span>`;
+
+                proGrid.innerHTML += `
+                    <div class="product-card pro-card">
+                        <div class="product-img-wrap" onclick="openProductDetail(${p.id}, true)" style="cursor:pointer;">
+                            <img src="${p.img}" class="product-img primary-img" alt="${sanitizeInput(p.title)}">
+                            ${p.img2 ? `<img src="${p.img2}" class="product-img secondary-img" alt="${sanitizeInput(p.title)} back view">` : ''}
+                        </div>
+                        <div class="product-details">
+                            <div class="product-title">${sanitizeInput(p.title)}</div>
+                            <div class="rating-row" onclick="openReviewsModal(${p.id})">${ratingHtml}</div>
+                            <div class="price-row"><span class="curr-price">PRO: ₹${p.proPrice}</span><span class="orig-price">₹${p.price}</span></div>
+                            ${unlocked
+                                ? `<button class="btn-gold" style="width:100%; font-size:10px;" onclick="openProPriceCheckout(${p.id})">Buy at Pro Price</button>`
+                                : `<button class="btn-gold" style="width:100%; font-size:10px;" disabled onclick="handleLockedProBuy()"><i class="fas fa-lock"></i> Pro VIP Locked</button>`
+                            }
+                            <div class="admin-controls" style="${isAdminLoggedIn ? 'display:flex;' : 'display:none;'}">
+                                <button class="btn-gold" style="padding:4px 8px; font-size:10px;" onclick="editProduct(${p.id}, true)">Edit</button>
+                                <button class="btn-gold" style="padding:4px 8px; font-size:10px; background:var(--danger-color); color:white;" onclick="deleteProduct(${p.id}, true)">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            updateWishlistBadge();
+        }
+
+        function switchTab(secId, el) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(secId).classList.add('active-section');
+            if (el) el.classList.add('active');
+            if (secId === 'sec-orders') renderOrdersSection();
+        }
+
+        function toggleTheme() {
+            let body = document.body;
+            if (body.getAttribute('data-theme') === 'light') {
+                body.removeAttribute('data-theme');
+                document.getElementById('themeStatusText').innerText = 'Current: Dark Luxury Gold';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                document.getElementById('themeStatusText').innerText = 'Current: Light Luxury Gold';
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        /* WISHLIST — local to this browser only */
+        function toggleWishlist(id) {
+            wishlist = wishlist.includes(id) ? wishlist.filter(x => x !== id) : [...wishlist, id];
+            saveWishlistLocal();
+            renderProducts();
+        }
+        function updateWishlistBadge() { document.getElementById('wishlistBadge').innerText = wishlist.length; }
+        function openWishlistModal() {
+            let cont = document.getElementById('wishlistContainer');
+            let items = [...products, ...proProducts].filter(p => wishlist.includes(p.id));
+            if (items.length === 0) {
+                cont.innerHTML = '<p style="font-size:12px; color:var(--text-muted);">Your wishlist is empty.</p>';
+            } else {
+                cont.innerHTML = '';
+                items.forEach(p => {
+                    let isProItem = proProducts.some(pp => pp.id === p.id);
+                    cont.innerHTML += `
+                        <div class="wishlist-item">
+                            <img src="${p.img}">
+                            <div class="wi-info"><div class="wi-title">${sanitizeInput(p.title)}</div><div class="wi-price">₹${isProItem ? p.proPrice : p.price}</div></div>
+                            <button class="btn-gold" style="font-size:10px; padding:6px 10px;" onclick="closeModal('wishlistModal'); openCheckoutModal(${p.id}, ${isProItem})">Buy</button>
+                            <button class="btn-outline" style="font-size:10px; padding:6px 10px;" onclick="toggleWishlist(${p.id}); openWishlistModal();">Remove</button>
+                        </div>
+                    `;
+                });
+            }
+            openModal('wishlistModal');
+        }
+
+        /* REVIEWS — shared globally via Firebase so every customer sees every review */
+        /* PRODUCT DETAIL SLIDER */
+        let currentSlideImages = [];
+        let currentSlideIndex = 0;
+        function openProductDetail(id, isPro) {
+            let p = (isPro ? proProducts : products).find(x => x.id === id);
+            if (!p) return;
+            let unlocked = !isPro || isActiveProMember();
+
+            document.getElementById('dTitle').innerText = p.title;
+            document.getElementById('dPrice').innerText = '₹' + (isPro ? p.proPrice : p.price);
+            document.getElementById('dOrigPrice').innerText = '₹' + p.origPrice;
+
+            let ratingData = getAvgRating(p.id);
+            document.getElementById('dRating').innerHTML = ratingData.count > 0
+                ? `${starString(ratingData.avg)} <span class="rev-count">(${ratingData.count} reviews)</span>`
+                : `<span class="rev-count">No reviews yet</span>`;
+            document.getElementById('dRating').onclick = () => { closeModal('detailModal'); openReviewsModal(p.id); };
+
+            currentSlideImages = [p.img, p.img2].filter(Boolean);
+            currentSlideIndex = 0;
+            document.getElementById('sliderTrack').innerHTML = currentSlideImages.map(img => `<img src="${img}" alt="${sanitizeInput(p.title)}">`).join('');
+            document.getElementById('sliderDots').innerHTML = currentSlideImages.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('');
+            updateSliderPosition();
+
+            let buyBtn = document.getElementById('dBuyBtn');
+            if (isPro && !unlocked) {
+                buyBtn.innerHTML = '<i class="fas fa-lock"></i> Pro VIP Locked';
+                buyBtn.onclick = () => { closeModal('detailModal'); handleLockedProBuy(); };
+            } else {
+                buyBtn.innerHTML = '<i class="fas fa-bolt"></i> Buy Now';
+                buyBtn.onclick = () => { closeModal('detailModal'); isPro ? openProPriceCheckout(p.id) : openCheckoutModal(p.id, false); };
+            }
+
+            openModal('detailModal');
+        }
+        function moveSlide(dir) {
+            if (currentSlideImages.length === 0) return;
+            currentSlideIndex = (currentSlideIndex + dir + currentSlideImages.length) % currentSlideImages.length;
+            updateSliderPosition();
+        }
+        function updateSliderPosition() {
+            document.getElementById('sliderTrack').style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+            document.querySelectorAll('#sliderDots .dot').forEach((d, i) => d.classList.toggle('active', i === currentSlideIndex));
+        }
+
+        function openReviewsModal(id) {
+            let p = products.find(x => x.id === id) || proProducts.find(x => x.id === id);
+            document.getElementById('reviewProdId').value = id;
+            document.getElementById('reviewsProductTitle').innerText = p.title;
+            let list = reviews[id] || [];
+            let listEl = document.getElementById('reviewsList');
+            if (list.length === 0) {
+                listEl.innerHTML = '<p style="font-size:12px; color:var(--text-muted);">No reviews yet — be the first!</p>';
+            } else {
+                listEl.innerHTML = '';
+                list.forEach(r => {
+                    listEl.innerHTML += `
+                        <div class="review-item">
+                            <div class="review-stars">${starString(r.rating)}</div>
+                            <div class="review-name">${r.name} <span class="verified-badge"><i class="fas fa-circle-check"></i> Verified Buyer</span></div>
+                            <div class="review-comment">${r.comment}</div>
+                        </div>
+                    `;
+                });
+            }
+            openModal('reviewsModal');
+        }
+        function submitReview(e) {
+            e.preventDefault();
+            let id = parseInt(document.getElementById('reviewProdId').value);
+            let name = sanitizeInput(document.getElementById('reviewName').value);
+            let rating = document.getElementById('reviewRating').value;
+            let comment = sanitizeInput(document.getElementById('reviewComment').value);
+            db.ref('reviews/' + id).push({ name, rating, comment });
+            e.target.reset();
+            openReviewsModal(id);
+        }
+
+        /* LOGIN (Name + Phone only, no OTP) */
+        let pendingLoginAction = null; // e.g. 'proPrice:5' or 'proMembership' — resumed after login
+        function handleLogin(e) {
+            e.preventDefault();
+            activeUser = { name: sanitizeInput(document.getElementById('loginName').value), phone: sanitizeInput(document.getElementById('loginPhone').value) };
+            document.getElementById('userAccountStatus').innerText = `Logged In: ${activeUser.name} (${activeUser.phone})`;
+            closeModal('loginModal');
+            if (pendingLoginAction) {
+                if (pendingLoginAction === 'proMembership') { startProMembership(); }
+                else if (pendingLoginAction.startsWith('proPrice:')) { openProPriceCheckout(parseInt(pendingLoginAction.split(':')[1])); }
+                pendingLoginAction = null;
+            }
+        }
+
+        /* ADMIN */
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            if (document.getElementById('adminPassInput').value === adminPassword) {
+                isAdminLoggedIn = true;
+                document.getElementById('adminPortalStatus').innerText = 'Unlocked';
+                document.getElementById('adminAddBtn').style.display = 'inline-flex';
+                document.getElementById('adminAddProBtn').style.display = 'inline-flex';
+                document.getElementById('adminPassCard').style.display = 'flex';
+                document.getElementById('adminPromoCard').style.display = 'flex';
+                document.getElementById('adminProMembersCard').style.display = 'flex';
+                document.getElementById('adminLogoCard').style.display = 'flex';
+                document.getElementById('navOrderLabel').innerText = 'Orders Recv';
+                document.getElementById('ordersTabHeading').innerText = 'Admin — Received Orders';
+                document.getElementById('orderRoleBadge').innerText = 'Admin Mode';
+                renderProducts();
+                renderOrdersSection();
+                closeModal('adminLoginModal');
+                alert('Admin Dashboard Unlocked!');
+            } else { alert('Galat Password'); }
+        }
+        function updateAdminPassword(e) {
+            e.preventDefault();
+            let newPass = document.getElementById('newAdminPass').value;
+            db.ref('admin_password').set(newPass);
+            alert('Password successfully changed!');
+            closeModal('changePassModal');
+        }
+        function createPromoCode(e) {
+            e.preventDefault();
+            let code = document.getElementById('promoCodeInput').value.toUpperCase();
+            let pct = parseInt(document.getElementById('promoPctInput').value);
+            db.ref('promo_code').set({ code, discountPct: pct, expiresAt: Date.now() + PROMO_VALIDITY_MS });
+            alert(`Promo code ${code} (${pct}% off) ban gaya — sirf 24 ghante valid, customer ko khud bataiye.`);
+            closeModal('promoModal');
+        }
+        function applyPromoCode() {
+            let code = document.getElementById('ckPromoInput').value;
+            if (!activePromoCode) { alert('Filhaal koi promo code active nahi hai.'); return; }
+            if (Date.now() > activePromoCode.expiresAt) { alert('Yeh promo code expire ho chuka hai.'); return; }
+            if (code.toUpperCase() === activePromoCode.code) {
+                appliedDiscount = Math.round((currentCheckoutItem.selectedPrice * activePromoCode.discountPct) / 100);
+                alert(`${activePromoCode.discountPct}% Discount Applied!`);
+                updateProductTotal();
+            } else { alert('Invalid Promo Code'); }
+        }
+
+        /* BRAND LOGO — synced via Firebase so it shows the same on every device */
+        function applyLogo(e) {
+            e.preventDefault();
+            let fileImg = document.getElementById('newLogoFile').files[0];
+            let url = document.getElementById('newLogoUrl').value.trim();
+
+            function setLogo(src) {
+                db.ref('app_logo').set(src);
+                closeModal('logoModal');
+                e.target.reset();
+            }
+
+            if (fileImg) {
+                let reader = new FileReader();
+                reader.onload = evt => setLogo(evt.target.result);
+                reader.readAsDataURL(fileImg);
+            } else if (url) {
+                setLogo(url);
+            } else {
+                removeLogo();
+            }
+        }
+        function removeLogo() {
+            db.ref('app_logo').remove();
+            closeModal('logoModal');
+        }
+
+        /* ZONE-BASED DELIVERY PRICING — uses PIN code prefix (India Post zones), not just keyword matching */
+        function calcDeliveryCharge(addressText, pincode) {
+            let addr = (addressText || '').toLowerCase();
+            let pin = (pincode || '').trim();
+
+            if (addr.includes('sirmandih') || addr.includes('rajdhanwar') || addr.includes('mayaram tola')) return 30;
+            if (pin.length < 3) return 80;
+
+            let first2 = pin.substring(0, 2);
+            let first1 = pin.charAt(0);
+
+            if (['81', '82', '83'].includes(first2)) return 50;
+            if (first1 === '8') return 70;
+            if (first1 === '7') return 80;
+            if (first1 === '4') return 110;
+            if (first1 === '5' || first1 === '6') return 140;
+            if (['1', '2', '3'].includes(first1)) return 130;
+            return 100;
+        }
+
+        function calculateDeliveryRate() {
+            calculatedDeliveryCharge = calcDeliveryCharge(document.getElementById('ckAddress').value, document.getElementById('ckPincode').value);
+            updateProductTotal();
+        }
+        function generateQR(imgId, downloadId, amount, label) {
+            let ref = 'APX' + Math.floor(1000000000 + Math.random() * 9000000000);
+            let upiUrl = `upi://pay?pa=akaship59923@naviaxis&pn=APX%20WEAR&am=${amount}&cu=INR&tr=${ref}&tn=${encodeURIComponent(label || 'APX WEAR Order')}`;
+            let qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+            document.getElementById(imgId).src = qrImgUrl;
+            document.getElementById(downloadId).href = qrImgUrl;
+        }
+
+        function updateProductTotal() {
+            document.getElementById('ckDeliveryText').innerText = '₹' + calculatedDeliveryCharge;
+            document.getElementById('ckDiscount').innerText = appliedDiscount;
+            let total = currentCheckoutItem.selectedPrice + calculatedDeliveryCharge - appliedDiscount;
+            document.getElementById('ckTotal').innerText = total;
+            generateQR('ckQrImg', 'ckQrDownload', total, currentCheckoutItem.title);
+        }
+
+        function openCheckoutModal(id, isPro) {
+            let p = (isPro ? proProducts : products).find(x => x.id === id);
+            currentCheckoutItem = { ...p, selectedPrice: isPro ? p.proPrice : p.price };
+            document.getElementById('ckTitle').innerText = currentCheckoutItem.title + (isPro ? ' (Pro Price)' : '');
+            document.getElementById('ckBasePrice').innerText = currentCheckoutItem.selectedPrice;
+            calculatedDeliveryCharge = 0; appliedDiscount = 0; hasPaidProduct = false;
+            document.getElementById('paymentConfirmBoxProduct').style.display = 'none';
+            document.getElementById('subOrderBtn').disabled = true;
+            document.getElementById('checkoutForm').reset();
+            updateProductTotal();
+            openModal('checkoutModal');
+        }
+
+        function calculateCustomDelivery() {
+            calculatedDeliveryCharge = calcDeliveryCharge(document.getElementById('custAddr').value, document.getElementById('custPincode').value);
+            document.getElementById('custDeliveryText').innerText = '₹' + calculatedDeliveryCharge;
+            let total = customOrderTemp.price + calculatedDeliveryCharge;
+            document.getElementById('custTotal').innerText = total;
+            generateQR('custQrImg', 'custQrDownload', total, 'Custom Print - ' + customOrderTemp.type);
+        }
+
+        function openCustomOrderModal(type, price) {
+            customOrderTemp = { type, price };
+            document.getElementById('custTypeDisplay').innerText = type;
+            document.getElementById('custBasePrice').innerText = price;
+            calculatedDeliveryCharge = 0; hasPaidCustom = false;
+            document.getElementById('custDeliveryText').innerText = 'Address daalein...';
+            document.getElementById('custTotal').innerText = price;
+            document.getElementById('paymentConfirmBoxCustom').style.display = 'none';
+            document.getElementById('subCustomBtn').disabled = true;
+            generateQR('custQrImg', 'custQrDownload', price, 'Custom Print - ' + type);
+            openModal('customOrderModal');
+        }
+
+        /* HONEST 2-STEP PAYMENT (no fake auto-verification) */
+        function triggerUPIPayment(kind) {
+            let amt, formValid;
+            if (kind === 'product') {
+                formValid = document.getElementById('checkoutForm').reportValidity();
+                if (!formValid) return;
+                amt = parseInt(document.getElementById('ckTotal').innerText);
+            } else if (kind === 'custom') {
+                let form = document.getElementById('custPincode').closest('form');
+                formValid = form.reportValidity();
+                if (!formValid) return;
+                amt = parseInt(document.getElementById('custTotal').innerText);
+            } else {
+                amt = 99;
+            }
+            let ref = 'APX' + Math.floor(1000000000 + Math.random() * 9000000000);
+            let payee = kind === 'promembership' ? 'APX%20WEAR%20PRO' : 'APX%20WEAR';
+            let upiUrl = `upi://pay?pa=akaship59923@naviaxis&pn=${payee}&am=${amt}&cu=INR&tr=${ref}&tn=Order_${ref}`;
+            window.location.href = upiUrl;
+
+            if (kind === 'product') {
+                hasPaidProduct = true;
+                document.getElementById('paymentConfirmBoxProduct').style.display = 'block';
+                document.getElementById('subOrderBtn').disabled = false;
+            } else if (kind === 'custom') {
+                hasPaidCustom = true;
+                document.getElementById('paymentConfirmBoxCustom').style.display = 'block';
+                document.getElementById('subCustomBtn').disabled = false;
+            } else {
+                document.getElementById('paymentConfirmBoxPro').style.display = 'block';
+                document.getElementById('subProBtn').disabled = false;
+            }
+        }
+
+        function placeProductOrder(e) {
+            e.preventDefault();
+            if (!hasPaidProduct) { alert('Pehle UPI se payment kijiye.'); return; }
+            let total = currentCheckoutItem.selectedPrice + calculatedDeliveryCharge - appliedDiscount;
+            let orderId = 'APX-' + Math.floor(100000 + Math.random() * 900000);
+            let customerName = sanitizeInput(document.getElementById('ckName').value);
+            let ord = {
+                type: 'Product',
+                customerName: customerName,
+                phone: sanitizeInput(document.getElementById('ckPhone').value),
+                phonepeName: sanitizeInput(document.getElementById('ckPhonePeName').value),
+                size: document.getElementById('ckSize').value,
+                address: sanitizeInput(document.getElementById('ckAddress').value + " - " + document.getElementById('ckPincode').value),
+                item: sanitizeInput(currentCheckoutItem.title),
+                amount: total,
+                dispatchHub: 'Sirmandih Warehouse → Mayaram Tola Office, Rajdhanwar',
+                status: 'Pending Verification',
+                createdAt: Date.now()
+            };
+            db.ref('orders/' + orderId).set(ord);
+            closeModal('checkoutModal');
+            playSuccessSound();
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            document.getElementById('thanksTitle').innerText = 'ORDER SUBMITTED!';
+            document.getElementById('thanksMessage').innerText = `Shukriya ${customerName}! Aapka order submit ho gaya — payment verify hote hi admin order accept karenge.`;
+            document.getElementById('thanksOverlay').style.display = 'flex';
+        }
+
+        function placeCustomOrder(e) {
+            e.preventDefault();
+            if (!hasPaidCustom) { alert('Pehle UPI se payment kijiye.'); return; }
+            let total = customOrderTemp.price + calculatedDeliveryCharge;
+            let orderId = 'CUST-' + Math.floor(100000 + Math.random() * 900000);
+            let ord = {
+                type: 'Custom Print',
+                customerName: sanitizeInput(document.getElementById('custName').value),
+                phone: sanitizeInput(document.getElementById('custPhone').value),
+                phonepeName: sanitizeInput(document.getElementById('custPhonePeName').value),
+                size: document.getElementById('custSize').value,
+                item: sanitizeInput(`Custom ${customOrderTemp.type} [Notes: ${document.getElementById('custText').value}]`),
+                amount: total,
+                address: sanitizeInput(document.getElementById('custAddr').value + " - " + document.getElementById('custPincode').value),
+                dispatchHub: 'Mayaram Tola Delivery Office, Rajdhanwar',
+                status: 'Pending Verification',
+                createdAt: Date.now()
+            };
+            db.ref('orders/' + orderId).set(ord);
+            closeModal('customOrderModal');
+            playSuccessSound();
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            document.getElementById('thanksTitle').innerText = 'CUSTOM ORDER PLACED!';
+            document.getElementById('thanksMessage').innerText = `Aapka Custom Order ${orderId} place ho gaya hai — payment confirm hote hi print shuru hoga.`;
+            document.getElementById('thanksOverlay').style.display = 'flex';
+        }
+
+        function startProMembership() {
+            if (!activeUser) {
+                pendingLoginAction = 'proMembership';
+                alert('Pro Membership lene ke liye pehle login kijiye.');
+                openModal('loginModal');
+                return;
+            }
+            document.getElementById('paymentConfirmBoxPro').style.display = 'none';
+            document.getElementById('subProBtn').disabled = true;
+            generateQR('proQrImg', 'proQrDownload', 99, 'APX WEAR Pro Membership');
+            openModal('proCheckoutModal');
+        }
+
+        function openProPriceCheckout(id) {
+            if (!activeUser) {
+                pendingLoginAction = 'proPrice:' + id;
+                alert('Pro Price par order karne ke liye pehle login kijiye.');
+                openModal('loginModal');
+                return;
+            }
+            if (!isActiveProMember()) {
+                alert('Aapki Pro Membership abhi active nahi hai. Pehle ₹99 Pro VIP membership lein.');
+                startProMembership();
+                return;
+            }
+            openCheckoutModal(id, true);
+        }
+
+        function submitProMembership(e) {
+            e.preventDefault();
+            db.ref('pro_members').push({ name: activeUser.name, phone: activeUser.phone, status: 'Pending' });
+            closeModal('proCheckoutModal');
+            playVipSound();
+            confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+            document.getElementById('thanksTitle').innerText = 'MEMBERSHIP SUBMITTED!';
+            document.getElementById('thanksMessage').innerText = 'Aapki Pro Membership request submit ho gayi hai — payment verify hote hi admin activate kar denge.';
+            document.getElementById('thanksOverlay').style.display = 'flex';
+        }
+
+        function openProMembersModal() {
+            renderProMembersList();
+            openModal('proMembersModal');
+        }
+        function renderProMembersList() {
+            let cont = document.getElementById('proMembersList');
+            if (proMembers.length === 0) {
+                cont.innerHTML = '<p style="font-size:11px; color:var(--text-muted);">Abhi tak koi Pro member nahi hai.</p>';
+                return;
+            }
+            cont.innerHTML = '';
+            proMembers.forEach(m => {
+                cont.innerHTML += `
+                    <div style="background:var(--bg-body); border:1px solid var(--border-card); padding:10px; border-radius:8px; margin-bottom:8px; font-size:11px;">
+                        <div><strong>${m.name}</strong> (${m.phone})</div>
+                        <div style="margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+                            <span class="status-badge" style="background:${m.status === 'Active' ? 'var(--accent-green)' : 'var(--gold-color)'}; color:#000;">${m.status}</span>
+                            ${m.status === 'Pending' ? `<button class="btn-gold" style="padding:4px 8px; font-size:10px;" onclick="acceptProMember('${m._key}')">Accept</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        function acceptProMember(key) {
+            db.ref('pro_members/' + key + '/status').set('Active');
+        }
+
+        function closeThanksOverlay() {
+            document.getElementById('thanksOverlay').style.display = 'none';
+            switchTab('sec-orders', document.getElementById('tabMyOrders'));
+        }
+
+        /* ORDERS SECTION */
+        function renderOrdersSection() {
+            let cont = document.getElementById('ordersDisplayContainer');
+            cont.innerHTML = '';
+            if (ordersDatabase.length === 0) {
+                cont.innerHTML = '<p style="font-size:11px; color:var(--text-muted);">Abhi tak koi order nahi hai.</p>';
+                return;
+            }
+            const STATUS_FLOW = ['Placed', 'Packed', 'Dispatched', 'Delivered'];
+
+            ordersDatabase.forEach(o => {
+                let stepIdx = STATUS_FLOW.indexOf(o.status);
+                let isPending = o.status === 'Pending Verification';
+                let isRejected = o.status === 'Rejected';
+                if (isAdminLoggedIn) {
+                    let nextStatus = STATUS_FLOW[stepIdx + 1];
+                    cont.innerHTML += `
+                        <div style="background:var(--bg-card); border:1px solid ${isPending ? 'var(--gold-color)' : 'var(--border-card)'}; padding:12px; border-radius:10px; margin-bottom:10px; font-size:11px;">
+                            <div style="display:flex; justify-content:space-between; font-weight:800; color:var(--gold-color);">
+                                <span>${o.orderId} <span style="font-size:9px; color:var(--text-muted);">(${o.type})</span></span>
+                                <span>₹${o.amount}</span>
+                            </div>
+                            <div style="margin:4px 0;"><strong>Customer:</strong> ${o.customerName} (${o.phone})</div>
+                            <div style="color:var(--gold-color);"><strong>PhonePe Name:</strong> ${o.phonepeName}</div>
+                            <div><strong>Item:</strong> ${o.item} [Size: ${o.size}]</div>
+                            <div><strong>Address:</strong> ${o.address}</div>
+                            <div class="dispatch-tag"><i class="fas fa-truck"></i> ${o.dispatchHub}</div>
+                            <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                                <span class="status-badge" style="background:${o.status === 'Delivered' ? 'var(--accent-green)' : isRejected ? 'var(--danger-color)' : 'var(--gold-color)'}; color:${isRejected ? '#fff' : '#000'};">${o.status}</span>
+                                <div style="display:flex; gap:6px;">
+                                    ${isPending ? `
+                                        <button class="btn-gold" style="padding:4px 8px; font-size:10px; background:var(--accent-green); color:#000;" onclick="acceptOrder('${o.orderId}')">Accept Order</button>
+                                        <button class="btn-outline" style="padding:4px 8px; font-size:10px; border-color:var(--danger-color); color:var(--danger-color);" onclick="rejectOrder('${o.orderId}')">Reject</button>
+                                    ` : nextStatus && !isRejected ? `<button class="btn-gold" style="padding:4px 8px; font-size:10px;" onclick="advanceOrderStatus('${o.orderId}')">Mark ${nextStatus}</button>` : ''}
+                                    <button class="btn-outline" style="padding:4px 8px; font-size:10px;" onclick="notifyDeliveryPartner('${o.orderId}')"><i class="fab fa-whatsapp"></i> Notify Delivery</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    cont.innerHTML += `
+                        <div style="background:var(--bg-card); border:1px solid var(--border-card); padding:12px; border-radius:10px; margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between; font-weight:800; color:var(--gold-color); font-size:12px;">
+                                <span>${o.orderId}</span> <span>₹${o.amount}</span>
+                            </div>
+                            <div style="font-size:11px; margin:4px 0;">${o.item} [Size: ${o.size}]</div>
+                            ${isPending ? `
+                                <div style="font-size:10px; color:var(--gold-color); background:rgba(212,175,55,0.1); padding:6px; border-radius:6px;">
+                                    <i class="fas fa-hourglass-half"></i> Payment verify ho raha hai — thodi der intezaar karein.
+                                </div>
+                            ` : isRejected ? `
+                                <div style="font-size:10px; color:var(--danger-color); background:rgba(255,71,87,0.1); padding:6px; border-radius:6px;">
+                                    <i class="fas fa-circle-exclamation"></i> Payment verify nahi ho paya. Humse WhatsApp par sampark karein.
+                                </div>
+                            ` : `
+                                <div class="tracker-steps">
+                                    ${STATUS_FLOW.map((s, i) => `<div class="tracker-step ${i <= stepIdx ? 'active' : ''}">${s}</div>`).join('')}
+                                </div>
+                            `}
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function acceptOrder(orderId) { db.ref('orders/' + orderId + '/status').set('Placed'); }
+        function rejectOrder(orderId) {
+            if (confirm('Yeh order reject karein? Customer ko dikhega ki payment verify nahi hui.')) {
+                db.ref('orders/' + orderId + '/status').set('Rejected');
+            }
+        }
+        function advanceOrderStatus(orderId) {
+            const STATUS_FLOW = ['Placed', 'Packed', 'Dispatched', 'Delivered'];
+            let o = ordersDatabase.find(x => x.orderId === orderId);
+            if (!o) return;
+            let cur = STATUS_FLOW.indexOf(o.status);
+            if (cur < STATUS_FLOW.length - 1) db.ref('orders/' + orderId + '/status').set(STATUS_FLOW[cur + 1]);
+        }
+        function notifyDeliveryPartner(orderId) {
+            let o = ordersDatabase.find(x => x.orderId === orderId);
+            if (!o) return;
+            let msg = `Naya order pickup ke liye ready hai:%0A%0A`
+                + `Order ID: ${o.orderId}%0A`
+                + `Item: ${o.item}%0A`
+                + `Customer: ${o.customerName} (${o.phone})%0A`
+                + `Address: ${o.address}%0A`
+                + `Amount: ₹${o.amount}`;
+            window.open(`https://wa.me/${DELIVERY_OFFICE_WHATSAPP}?text=${msg}`, '_blank');
+        }
+
+        /* PRODUCT MANAGEMENT */
+        function openAddProductModal(isPro) {
+            document.getElementById('editProdId').value = '';
+            document.getElementById('isProTargetInput').value = isPro ? 'true' : 'false';
+            document.getElementById('prodModalTitle').innerText = isPro ? 'Add Pro VIP Product' : 'Add Standard Product';
+            document.getElementById('prodTitleInput').value = '';
+            document.getElementById('prodPriceInput').value = '';
+            document.getElementById('prodProPriceInput').value = '';
+            document.getElementById('prodOrigPriceInput').value = '';
+            document.getElementById('prodImgInput').value = '';
+            document.getElementById('prodImg2Input').value = '';
+            openModal('addProductModal');
+        }
+
+        function editProduct(id, isPro) {
+            let list = isPro ? proProducts : products;
+            let p = list.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('editProdId').value = p.id;
+            document.getElementById('isProTargetInput').value = isPro ? 'true' : 'false';
+            document.getElementById('prodTitleInput').value = p.title;
+            document.getElementById('prodPriceInput').value = p.price;
+            document.getElementById('prodProPriceInput').value = p.proPrice || '';
+            document.getElementById('prodOrigPriceInput').value = p.origPrice;
+            document.getElementById('prodImgInput').value = p.img.startsWith('data:') ? '' : p.img;
+            document.getElementById('prodImg2Input').value = p.img2 || '';
+            document.getElementById('prodModalTitle').innerText = isPro ? 'Edit Pro VIP Product' : 'Edit Standard Product';
+            openModal('addProductModal');
+        }
+        function deleteProduct(id, isPro) {
+            let path = isPro ? 'pro_products/' : 'std_products/';
+            db.ref(path + id).remove();
+            db.ref('reviews/' + id).remove();
+            wishlist = wishlist.filter(x => x !== id);
+            saveWishlistLocal();
+        }
+        function readFileAsBase64(file) {
+            return new Promise(resolve => {
+                if (!file) { resolve(''); return; }
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function saveProduct(e) {
+            e.preventDefault();
+            let editId = document.getElementById('editProdId').value;
+            let isProTarget = document.getElementById('isProTargetInput').value === 'true';
+            let title = sanitizeInput(document.getElementById('prodTitleInput').value);
+            let price = parseInt(document.getElementById('prodPriceInput').value);
+            let proPrice = parseInt(document.getElementById('prodProPriceInput').value) || null;
+            let origPrice = parseInt(document.getElementById('prodOrigPriceInput').value);
+            let urlImg = document.getElementById('prodImgInput').value.trim();
+            let urlImg2 = document.getElementById('prodImg2Input').value.trim();
+            let fileImg1 = document.getElementById('prodFileInput').files[0];
+            let fileImg2 = document.getElementById('prodFile2Input').files[0];
+            let defaultPlaceholder = "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500";
+            let path = isProTarget ? 'pro_products/' : 'std_products/';
+
+            try {
+                // Gallery file (if chosen) wins over the URL field for each image
+                let img1Base64 = await readFileAsBase64(fileImg1);
+                let img2Base64 = await readFileAsBase64(fileImg2);
+                let finalImg1 = img1Base64 || urlImg;
+                let finalImg2 = img2Base64 || urlImg2;
+
+                if (editId) {
+                    let updateData = { title, price, origPrice, img2: finalImg2 || null };
+                    if (isProTarget) updateData.proPrice = proPrice;
+                    if (finalImg1) updateData.img = finalImg1;
+                    await db.ref(path + editId).update(updateData);
+                } else {
+                    let newId = isProTarget ? (Date.now() + 1000000) : Date.now();
+                    let newData = { title, price, origPrice, img: finalImg1 || defaultPlaceholder, img2: finalImg2 || null };
+                    if (isProTarget) newData.proPrice = proPrice;
+                    await db.ref(path + newId).set(newData);
+                }
+                closeModal('addProductModal');
+                document.getElementById('prodModalTitle').innerText = 'Product Manager';
+                e.target.reset();
+                document.getElementById('editProdId').value = '';
+            } catch (err) {
+                alert('❌ Save fail ho gaya: ' + err.message);
+            }
+        }
+
+        /* CAMERA / GALLERY VISUAL SEARCH (DEMO — no real AI matching) */
+        function handleCameraSearch(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert(`Photo mil gayi: "${file.name}"\n(Demo Mode: real AI photo-matching ke liye ek vision/backend API chahiye. Filhaal saare available products dikha rahe hain.)`);
+                switchTab('sec-home', document.querySelector('.nav-tab'));
+            }
+        }
+
+        function filterProducts() {
+            let q = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.product-card').forEach(card => {
+                let t = card.querySelector('.product-title').innerText.toLowerCase();
+                card.style.display = t.includes(q) ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
